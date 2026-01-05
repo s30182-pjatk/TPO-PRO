@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8" />
+  <title>Comparison Result – Star Wars Figures</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.cdnfonts.com/css/star-jedi" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #ffffff;
+      color: #222222;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .navbar {
+      background-color: #212121;
+    }
+    .navbar-brand, .nav-link {
+      font-family: 'Star Jedi', sans-serif;
+      color: #FFD700 !important;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+    .nav-link:hover {
+      color: #ffffff !important;
+    }
+    .header {
+      background-color: #000000;
+      color: #FFD700;
+      padding: 1.5rem;
+      font-family: 'Star Jedi', sans-serif;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.7);
+      letter-spacing: 2px;
+      user-select: none;
+    }
+    .header h1 {
+      font-size: 2.8rem;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .container {
+      flex-grow: 1;
+      max-width: 900px;
+      margin: 3rem auto 4rem;
+    }
+    .figure-card {
+      background: linear-gradient(145deg, #1c1c1c, #111111);
+      border-radius: 12px;
+      padding: 2rem 1.8rem;
+      text-align: center;
+      box-shadow: 0 8px 16px rgb(0 0 0 / 0.7);
+      transition: transform 0.3s ease;
+      color: #ddd;
+      margin-bottom: 2rem;
+    }
+    .figure-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 14px 24px rgb(255 215 0 / 0.7);
+    }
+    .figure-image {
+      max-height: 230px;
+      margin-bottom: 1.3rem;
+      border-radius: 8px;
+      border: 2px solid #FFD700;
+      object-fit: contain;
+      background-color: #222;
+      box-shadow: 0 0 8px #ffd700aa;
+    }
+    .figure-title {
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #ffd700;
+      margin-bottom: 0.3rem;
+      letter-spacing: 1px;
+      text-shadow: 0 0 6px #ffd700bb;
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: #ccc;
+    }
+    .better {
+      color: #4CAF50;
+      font-weight: 700;
+      margin-left: 0.2rem;
+      font-size: 1.2rem;
+    }
+    .worse {
+      color: #e53935;
+      font-weight: 700;
+      margin-left: 0.2rem;
+      font-size: 1.2rem;
+    }
+    .comparison-score {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #FFD700;
+      text-align: center;
+      user-select: none;
+      text-shadow: 0 0 8px #ffd700cc;
+    }
+    .btn-back {
+      background-color: #ffd700;
+      color: #000;
+      font-weight: 700;
+      padding: 0.65rem 2.5rem;
+      border-radius: 30px;
+      border: none;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      box-shadow: 0 0 12px #ffd700bb;
+      user-select: none;
+      margin-top: 2rem;
+      display: inline-block;
+      text-decoration: none;
+    }
+    .btn-back:hover {
+      background-color: #fff;
+      color: #222;
+      box-shadow: 0 0 20px #fff;
+      text-decoration: none;
+    }
+    @media (max-width: 767px) {
+      .figure-card {
+        margin-bottom: 2rem;
+      }
+      .container > .row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/home/catalogue">SW Catalog</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="/user/collection">My Collection</a></li>
+        <li class="nav-item"><a class="nav-link" href="/user/compare">Compare Figures</a></li>
+        <li class="nav-item"><a class="nav-link" href="/submit">Submit to Catalog</a></li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <form th:action="@{/logout}" method="post" style="display:inline;">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" hidden>
+            <button class="nav-link btn btn-link" style="color: #FFD700; padding: 0; border: none;">Logout</button>
+          </form>
+        </li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()"><a class="nav-link" href="/login">Log In</a></li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()"><a class="nav-link" href="/register">Register</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="header">
+  <h1>Comparison Result</h1>
+</div>
+
+<!-- Comparison Content -->
+<div class="container my-5"
+     th:with="
+       f1CondVal=${compareResult.figureOne.condition == 'Mint' ? 5 :
+                  compareResult.figureOne.condition == 'Near Mint' ? 4 :
+                  compareResult.figureOne.condition == 'Good' ? 3 :
+                  compareResult.figureOne.condition == 'Fair' ? 2 : 1},
+       f2CondVal=${compareResult.figureTwo.condition == 'Mint' ? 5 :
+                  compareResult.figureTwo.condition == 'Near Mint' ? 4 :
+                  compareResult.figureTwo.condition == 'Good' ? 3 :
+                  compareResult.figureTwo.condition == 'Fair' ? 2 : 1},
+       f1Release=${compareResult.figureOne.releaseYear},
+       f2Release=${compareResult.figureTwo.releaseYear},
+       f1Value=${compareResult.figureOne.estimatedValue},
+       f2Value=${compareResult.figureTwo.estimatedValue},
+       f1Wins=${(f1Release > f2Release ? 1 : 0) + (f1CondVal > f2CondVal ? 1 : 0) + (f1Value > f2Value ? 1 : 0)},
+       f2Wins=${(f2Release > f1Release ? 1 : 0) + (f2CondVal > f1CondVal ? 1 : 0) + (f2Value > f1Value ? 1 : 0)}">
+
+  <div class="row">
+    <div class="col-md-5">
+      <div class="figure-card">
+        <img th:src="${compareResult.figureOne.imageUrl}" alt="Figure One Image" class="figure-image" />
+        <h2 class="figure-title" th:text="${compareResult.figureOne.figureName}">Figure One</h2>
+        <p><strong>Character Type:</strong> <span th:text="${compareResult.figureOne.charType}">CharType</span></p>
+        <p><strong>Series:</strong> <span th:text="${compareResult.figureOne.series}">Series</span></p>
+        <p><strong>Release Year:</strong> <span th:text="${compareResult.figureOne.releaseYear}">Year</span>
+          <span th:if="${f1Release > f2Release}" class="better">&#9650;</span>
+          <span th:if="${f1Release < f2Release}" class="worse">&#9660;</span>
+        </p>
+        <p><strong>Condition:</strong> <span th:text="${compareResult.figureOne.condition}">Condition</span>
+          <span th:if="${f1CondVal > f2CondVal}" class="better">&#9650;</span>
+          <span th:if="${f1CondVal < f2CondVal}" class="worse">&#9660;</span>
+        </p>
+        <p><strong>Estimated Value:</strong> $<span th:text="${compareResult.figureOne.estimatedValue}">Value</span>
+          <span th:if="${f1Value > f2Value}" class="better">&#9650;</span>
+          <span th:if="${f1Value < f2Value}" class="worse">&#9660;</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="col-md-2 d-flex align-items-center justify-content-center flex-column">
+      <div class="comparison-score mb-3">
+        Similarity Score:
+        <span th:text="${#numbers.formatDecimal(compareResult.score, 1, 2)} + ' / 1.0'">0.85 / 1.0</span>
+      </div>
+      <div class="comparison-score" th:text="${f1Wins > f2Wins ? 'Figure 1 Wins' : (f1Wins < f2Wins ? 'Figure 2 Wins' : 'Tie')}">Result</div>
+    </div>
+
+    <div class="col-md-5">
+      <div class="figure-card">
+        <img th:src="${compareResult.figureTwo.imageUrl}" alt="Figure Two Image" class="figure-image" />
+        <h2 class="figure-title" th:text="${compareResult.figureTwo.figureName}">Figure Two</h2>
+        <p><strong>Character Type:</strong> <span th:text="${compareResult.figureTwo.charType}">CharType</span></p>
+        <p><strong>Series:</strong> <span th:text="${compareResult.figureTwo.series}">Series</span></p>
+        <p><strong>Release Year:</strong> <span th:text="${compareResult.figureTwo.releaseYear}">Year</span>
+          <span th:if="${f2Release > f1Release}" class="better">&#9650;</span>
+          <span th:if="${f2Release < f1Release}" class="worse">&#9660;</span>
+        </p>
+        <p><strong>Condition:</strong> <span th:text="${compareResult.figureTwo.condition}">Condition</span>
+          <span th:if="${f2CondVal > f1CondVal}" class="better">&#9650;</span>
+          <span th:if="${f2CondVal < f1CondVal}" class="worse">&#9660;</span>
+        </p>
+        <p><strong>Estimated Value:</strong> $<span th:text="${compareResult.figureTwo.estimatedValue}">Value</span>
+          <span th:if="${f2Value > f1Value}" class="better">&#9650;</span>
+          <span th:if="${f2Value < f1Value}" class="worse">&#9660;</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <a href="/user/compare" class="btn-back">Back to Compare</a>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

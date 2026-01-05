@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: TPO-PRO
+  datasource:
+    url: jdbc:h2:file:./db/database
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+server:
+  servlet:
+    context-path:

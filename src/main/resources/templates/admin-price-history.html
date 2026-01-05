@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Price History</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+  <h2 th:text="'Manage Price History for: ' + ${figure.figureName}" class="mb-4"></h2>
+
+  <!-- Existing entries -->
+  <table class="table table-bordered">
+    <thead>
+    <tr>
+      <th>Date</th>
+      <th>Value</th>
+      <th>Update</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="entry : ${priceHistory}">
+      <form th:action="@{/admin/update-price-entry}" method="post">
+        <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" hidden>
+        <td>
+          <input type="datetime-local" name="recordedAt"
+                 th:value="${entry.recordedAt != null ? #temporals.format(entry.recordedAt, 'yyyy-MM-dd''T''HH:mm') : ''}"
+                 class="form-control" />
+        </td>
+        <td>
+          <input type="number" step="0.01" name="estimatedValue"
+                 th:value="${entry.estimatedValue}" class="form-control" />
+        </td>
+        <td>
+          <input type="hidden" name="entryId" th:value="${entry.id}" />
+          <input type="hidden" name="figureId" th:value="${entry.figureId}" />
+          <button type="submit" class="btn btn-sm btn-primary">Update</button>
+        </td>
+      </form>
+    </tr>
+    </tbody>
+  </table>
+
+  <!-- Add new entry -->
+  <h4>Add New Entry</h4>
+  <form th:action="@{/admin/add-price-entry}" method="post" class="row g-3">
+    <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" hidden>
+    <input type="hidden" name="figureId" th:value="${figure.id}" />
+    <div class="col-md-6">
+      <label for="newValue" class="form-label">Estimated Value</label>
+      <input type="number" step="0.01" name="estimatedValue" class="form-control" required />
+    </div>
+    <div class="col-md-6">
+      <label for="recordedAt" class="form-label">Date</label>
+      <input type="datetime-local" name="recordedAt" class="form-control" required />
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-success">Add Entry</button>
+    </div>
+  </form>
+
+  <a th:href="@{/admin/figures}" class="btn btn-secondary mt-4">Back to Figures</a>
+</div>
+</body>
+</html>

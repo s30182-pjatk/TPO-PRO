@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Price Table – Figure</title>
+
+  <!-- Chart.js and adapter -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+
+  <!-- Bootstrap & Star Jedi font -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.cdnfonts.com/css/star-jedi" rel="stylesheet">
+
+  <style>
+    body {
+      background-color: #ffffff;
+    }
+
+    .header {
+      background-color: #000000;
+      color: #FFD700;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-family: 'Star Jedi', sans-serif;
+      font-size: 2.2rem;
+      margin: 0;
+    }
+
+    .navbar {
+      background-color: #212121;
+    }
+
+    .navbar-brand,
+    .nav-link {
+      font-family: 'Star Jedi', sans-serif;
+      color: #FFD700 !important;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+
+    .nav-link:hover {
+      color: #ffffff !important;
+    }
+
+    .info-card {
+      font-family: 'Star Jedi', sans-serif;
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .divider {
+      border-top: 2px solid #212121;
+      text-align: center;
+      margin: 2rem 0 2rem;
+      position: relative;
+    }
+
+    .divider span {
+      font-family: 'Star Jedi', sans-serif;
+      font-size: 1.4rem;
+      background-color: #ffffff;
+      padding: 0 1rem;
+      position: relative;
+      top: -1rem;
+      color: #212121;
+    }
+
+    canvas {
+      background-color: #ffffff;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/home/catalogue">SW Catalog</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMenu">
+      <ul class="navbar-nav ms-auto gap-3 align-items-center">
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <a class="nav-link" href="/user/collection">MY COLLECTION</a>
+        </li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <a class="nav-link" href="/user/compare">COMPARE FIGURES</a>
+        </li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <a class="nav-link" href="/submit">SUBMIT TO CATALOG</a>
+        </li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <form th:action="@{/logout}" method="post" style="display:inline;">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" hidden>
+            <button class="nav-link btn btn-link p-0" style="color: #FFD700; font-family: 'Star Jedi', sans-serif; font-size: 1.1rem; letter-spacing: 1px;">LOGOUT</button>
+          </form>
+        </li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()">
+          <a class="nav-link" href="/login">LOG IN</a>
+        </li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()">
+          <a class="nav-link" href="/register">REGISTER</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="header">
+  <h1 th:text="'Price Chart – ' + ${getTableDTO.figureName}">Price Chart</h1>
+</div>
+
+<!-- Main Content -->
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="info-card text-center">
+        <img th:src="${getTableDTO.imageUrl}" class="img-fluid mb-3" alt="Figure Image" style="max-height: 300px; object-fit: contain;">
+        <h3 th:text="${getTableDTO.figureName}">Figure Name</h3>
+        <p th:text="'Type: ' + ${getTableDTO.charType}">Character Type</p>
+        <p th:text="'Series: ' + ${getTableDTO.series}">Series</p>
+        <p th:text="'Year: ' + ${getTableDTO.releaseYear}">Release Year</p>
+        <p th:text="'Condition: ' + ${getTableDTO.condition}">Condition</p>
+        <p class="fw-bold" th:text="'Estimated Value: $' + ${getTableDTO.estimatedValue}">Estimated Value</p>
+      </div>
+
+      <div class="divider"><span>PRICE GRAPH</span></div>
+
+      <canvas id="priceChart" height="400"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Chart Script -->
+<script th:inline="javascript">
+  let history = [[${getTableDTO.priceHistory}]];
+  let projected = [[${getTableDTO.projectedPriceHistory}]];
+
+  let historyLabels = history.map(e => new Date(e.recordedAt));
+  let historyValues = history.map(e => e.estimatedValue);
+
+  let projectedLabels = projected.map(e => new Date(e.recordedAt));
+  let projectedValues = projected.map(e => e.estimatedValue);
+
+  const allLabels = historyLabels.concat(projectedLabels);
+  const paddedHistory = historyValues.concat(new Array(projectedLabels.length).fill(null));
+  const paddedProjection = new Array(historyValues.length).fill(null).concat(projectedValues);
+
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allLabels,
+      datasets: [
+        {
+          label: 'Historical Price',
+          data: paddedHistory,
+          borderColor: 'gold',
+          backgroundColor: 'rgba(255, 215, 0, 0.2)',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Projected Price',
+          data: paddedProjection,
+          borderColor: 'gray',
+          backgroundColor: 'rgba(128, 128, 128, 0.2)',
+          borderDash: [5, 5],
+          tension: 0.3,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'month'
+          },
+          title: {
+            display: true,
+            text: 'Date'
+          }
+        },
+        y: {
+          beginAtZero: false,
+          title: {
+            display: true,
+            text: 'Value ($)'
+          }
+        }
+      },
+      responsive: true
+    }
+  });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

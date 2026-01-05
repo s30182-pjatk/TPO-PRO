@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><!DOCTYPE html>
+      <html xmlns:th="http://www.thymeleaf.org">
+      <head>
+      <meta charset="UTF-8">
+      <title>Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Admin Panel</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1 class="mb-4">Welcome to the Admin Dashboard</h1>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Manage Figures</h5>
+          <p class="card-text">View and manage all figures in the database.</p>
+          <a th:href="@{/admin/figures}" class="btn btn-primary">Go to Figures</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Manage Users</h5>
+          <p class="card-text">View and manage registered users and roles.</p>
+          <a th:href="@{/admin/users}" class="btn btn-primary">Go to Users</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6 mb-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Manage Submission</h5>
+        <p class="card-text">View and manage submissions to public catalogue.</p>
+        <a th:href="@{/admin/submissions}" class="btn btn-primary">Go to Submissions</a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
+</title>
+</head>
+<body>
+
+</body>
+</html>

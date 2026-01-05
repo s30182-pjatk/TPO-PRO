@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Manage Submissions</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-4">
+  <h2 class="mb-4">Public Catalog Submissions</h2>
+  <table class="table table-hover">
+    <thead>
+    <tr>
+      <th>Submitter</th>
+      <th>Email</th>
+      <th>Figure</th>
+      <th>Status</th>
+      <th>Submitted</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="submission : ${submissions}">
+      <td th:text="${submission.submitter}">John Doe</td>
+      <td th:text="${submission.email}">john@example.com</td>
+      <td th:text="${submission.figure}">Luke Skywalker</td>
+      <td th:text="${submission.status}">Pending</td>
+      <td th:text="${#temporals.format(submission.submitDate, 'yyyy-MM-dd HH:mm')}"></td>
+      <td>
+        <!-- Update Status -->
+        <form th:action="@{/admin/update-submission-status}" method="post" class="d-inline">
+          <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" hidden>
+          <input type="hidden" name="id" th:value="${submission.id}" />
+          <select name="status" class="form-select form-select-sm d-inline w-auto">
+            <option th:selected="${submission.status == 'PENDING'}">PENDING</option>
+            <option th:selected="${submission.status == 'APPROVED'}">APPROVED</option>
+            <option th:selected="${submission.status == 'REJECTED'}">REJECTED</option>
+          </select>
+          <button type="submit" class="btn btn-sm btn-success">Update</button>
+        </form>
+
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <a href="/admin" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+</body>
+</html>

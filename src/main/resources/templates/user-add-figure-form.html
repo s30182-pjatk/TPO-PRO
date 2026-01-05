@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8" />
+  <title>Add Figure to My Collection</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.cdnfonts.com/css/star-jedi" rel="stylesheet" />
+  <style>
+    body {
+      background-color: #ffffff;
+    }
+
+    .header {
+      background-color: #000000;
+      color: #FFD700;
+      padding: 1.5rem;
+      font-family: 'Star Jedi', sans-serif;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      margin: 0;
+    }
+
+    .navbar {
+      background-color: #212121;
+    }
+
+    .navbar-brand, .nav-link {
+      font-family: 'Star Jedi', sans-serif;
+      color: #FFD700 !important;
+      font-size: 1.1rem;
+      letter-spacing: 1px;
+    }
+
+    .nav-link:hover {
+      color: #000000 !important;
+    }
+
+    .figure-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background-color: #ffffff;
+      padding: 2rem;
+      border-radius: 10px;
+    }
+
+    .form-label {
+      font-weight: bold;
+    }
+
+    .btn-back {
+      background-color: #212121;
+      color: #FFD700;
+      font-weight: bold;
+    }
+
+    .btn-back:hover {
+      background-color: #FFD700;
+      color: #000000;
+    }
+
+    input:focus,
+    select:focus {
+      box-shadow: 0 0 0 0.2rem rgba(255, 215, 0, 0.4);
+      border-color: #FFD700;
+    }
+
+    /* Override Bootstrap tab nav to match style */
+    .nav-tabs {
+      border-bottom: 2px solid #FFD700;
+      font-family: 'Star Jedi', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+    }
+
+    .nav-tabs .nav-link {
+      color: #212121;
+      border: none;
+      border-bottom: 3px solid transparent;
+      padding: 0.5rem 1.5rem;
+    }
+
+    .nav-tabs .nav-link:hover {
+      color: #FFD700;
+    }
+
+    .nav-tabs .nav-link.active {
+      color: #FFD700;
+      border-bottom-color: #FFD700;
+      background-color: transparent;
+      font-weight: bold;
+    }
+
+    /* Style for the "Add from Catalogue" cards */
+    .card.bg-dark.text-light.border-warning {
+      transition: transform 0.2s;
+    }
+    .card.bg-dark.text-light.border-warning:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+    }
+
+    /* Heading inside tabs */
+    .tab-pane h3 {
+      margin-bottom: 1.5rem;
+      color: #212121;
+      font-family: 'Star Jedi', sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/home/catalogue">SW Catalog</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarMenu">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <a class="nav-link" href="#">My Collection</a>
+        </li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <a class="nav-link" href="#">Compare Figures</a>
+        </li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <a class="nav-link" href="#">Submit to Catalog</a>
+        </li>
+        <li class="nav-item" sec:authorize="isAuthenticated()">
+          <form th:action="@{/logout}" method="post" style="display:inline;">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" hidden>
+            <button class="nav-link btn btn-link" style="color: #FFD700; padding: 0; border: none;">Logout</button>
+          </form>
+        </li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()">
+          <a class="nav-link" href="/login">Log In</a>
+        </li>
+        <li class="nav-item" sec:authorize="!isAuthenticated()">
+          <a class="nav-link" href="/register">Register</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="header">
+  <h1>Add Figure to My Collection</h1>
+</div>
+
+<!-- Tabs Container -->
+<div class="figure-container">
+
+  <!-- Tabs Nav -->
+  <ul class="nav nav-tabs mb-4" id="addFigureTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="add-new-tab" data-bs-toggle="tab" data-bs-target="#add-new" type="button" role="tab" aria-controls="add-new" aria-selected="true">
+        Add New
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="add-from-catalogue-tab" data-bs-toggle="tab" data-bs-target="#add-from-catalogue" type="button" role="tab" aria-controls="add-from-catalogue" aria-selected="false">
+        Add from Catalogue
+      </button>
+    </li>
+  </ul>
+
+  <!-- Tabs Content -->
+  <div class="tab-content" id="addFigureTabsContent">
+
+    <!-- Add New Tab Pane -->
+    <div class="tab-pane fade show active" id="add-new" role="tabpanel" aria-labelledby="add-new-tab">
+      <form th:action="@{/user/collection/add-figure}" th:object="${addFigureDTO}" method="post" novalidate>
+        <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" hidden>
+        <input type="hidden" th:field="*{userId}" />
+
+        <div class="mb-3">
+          <label for="figureName" class="form-label">Figure Name</label>
+          <input type="text" th:field="*{figureName}" th:classappend="${#fields.hasErrors('figureName')} ? 'is-invalid'" class="form-control" id="figureName" required />
+          <div class="invalid-feedback" th:errors="*{figureName}"></div>
+        </div>
+
+        <div class="mb-3">
+          <label for="charType" class="form-label">Character Type</label>
+          <input type="text" th:field="*{charType}" th:classappend="${#fields.hasErrors('charType')} ? 'is-invalid'" class="form-control" id="charType" required />
+          <div class="invalid-feedback" th:errors="*{charType}"></div>
+        </div>
+
+        <div class="mb-3">
+          <label for="series" class="form-label">Series</label>
+          <input type="text" th:field="*{series}" th:classappend="${#fields.hasErrors('series')} ? 'is-invalid'" class="form-control" id="series" required />
+          <div class="invalid-feedback" th:errors="*{series}"></div>
+        </div>
+
+        <div class="mb-3">
+          <label for="releaseYear" class="form-label">Release Year</label>
+          <input type="number"
+                 th:field="*{releaseYear}"
+                 th:classappend="${#fields.hasErrors('releaseYear')} ? 'is-invalid'"
+                 class="form-control"
+                 id="releaseYear"
+                 min="1970"
+                 th:max="${T(java.time.Year).now().getValue()}" />
+          <div class="invalid-feedback" th:errors="*{releaseYear}"></div>
+        </div>
+
+        <div class="mb-3">
+          <label for="condition" class="form-label">Condition</label>
+          <select th:field="*{condition}" th:classappend="${#fields.hasErrors('condition')} ? 'is-invalid'" class="form-select" id="condition" required>
+            <option value="">Select Condition</option>
+            <option value="Mint">Mint</option>
+            <option value="Near Mint">Near Mint</option>
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Poor">Poor</option>
+          </select>
+          <div class="invalid-feedback" th:errors="*{condition}"></div>
+        </div>
+
+        <div class="mb-3">
+          <label for="estimatedValue" class="form-label">Estimated Value ($)</label>
+          <input type="number"
+                 step="0.01"
+                 th:field="*{estimatedValue}"
+                 th:classappend="${#fields.hasErrors('estimatedValue')} ? 'is-invalid'"
+                 class="form-control"
+                 id="estimatedValue" />
+          <div class="invalid-feedback" th:errors="*{estimatedValue}"></div>
+        </div>
+
+        <div class="mb-3">
+          <label for="imageUrl" class="form-label">Image URL</label>
+          <input type="url"
+                 th:field="*{imageUrl}"
+                 th:classappend="${#fields.hasErrors('imageUrl')} ? 'is-invalid'"
+                 class="form-control"
+                 id="imageUrl" />
+          <div class="invalid-feedback" th:errors="*{imageUrl}"></div>
+        </div>
+
+        <button type="submit" class="btn btn-back">Add to My Collection</button>
+        <a href="/user/collection" class="btn btn-secondary ms-2">Cancel</a>
+      </form>
+
+    </div>
+
+    <!-- Add from Catalogue Tab Pane -->
+    <div class="tab-pane fade" id="add-from-catalogue" role="tabpanel" aria-labelledby="add-from-catalogue-tab">
+      <h3>Add from Approved Public Figures</h3>
+      <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col" th:each="figure : ${approvedfigures}">
+          <div class="card h-100 bg-dark text-light border-warning">
+            <img
+                    th:src="${figure.imageUrl}"
+                    class="card-img-top"
+                    alt="Figure image"
+                    style="height: 250px; object-fit: cover;"
+            />
+            <div class="card-body">
+              <h5 class="card-title" th:text="${figure.figureName}">Figure Name</h5>
+              <p class="card-text">
+                <strong>Series:</strong> <span th:text="${figure.series}">Series</span><br />
+                <strong>Release Year:</strong> <span th:text="${figure.releaseYear}">Year</span><br />
+                <strong>Condition:</strong> <span th:text="${figure.condition}">Condition</span><br />
+                <strong>Estimated Value:</strong> $<span th:text="${figure.estimatedValue}">Value</span>
+              </p>
+
+              <!-- Form to Add Existing Figure by Name -->
+              <form th:action="@{/user/collection/add-figure-existing}" method="post" th:object="${addExistingDTO}">
+                <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" hidden>
+                <input type="hidden" name="figureId" th:value="${figure.id}" />
+                <input type="hidden" name="userId" th:value="${addFigureDTO.userId}" />
+                <button type="submit" class="btn btn-warning w-100 fw-bold mt-2">Add to My Collection</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

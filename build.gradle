@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.0'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'pl.edu.pja.gden'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    runtimeOnly 'com.h2database:h2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // Argon2 encoder (uses Bouncy Castle + Jargon2 under the hood)
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70' // Or latest stable
+    implementation 'de.mkammerer:argon2-jvm:2.11' // Optional if not using Spring's default
+
+    // Needed for SCrypt and PBKDF2 support via Spring Security
+    implementation 'org.springframework.security:spring-security-crypto'
+
+    // Optional but recommended: BOM to align versions
+    implementation platform('org.springframework.boot:spring-boot-dependencies:3.2.5') // match your version
+
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
